@@ -1,9 +1,7 @@
 from flask import Flask, request, json
 from guru2 import get_booking_page
+import logging
 
-# import request
-
-# creating a Flask app
 app = Flask(__name__)
 
 
@@ -16,7 +14,9 @@ def home():
         print('')
 
 
+
 host_IP = f'{input("Please inset IP:")}'
 host_port = f'{input("Please inset port:")}'
 if __name__ == '__main__':
     app.run(host=host_IP, port=host_port)
+
