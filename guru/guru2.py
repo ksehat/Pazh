@@ -4,7 +4,7 @@ from selenium.webdriver.support.ui import Select
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import logging
-
+import re
 
 
 def click_operation(driver, xpath):
@@ -22,7 +22,7 @@ def send_keys_operations(driver, xpath, keys):
         send_keys_operations(driver, xpath, keys)
 
 
-def get_booking_page(start, end, adult, child, infant, departing, returning):
+def get_booking_page(data):
     # Create logger and assign handler
     logging.basicConfig(filename='log.log', filemode='a', format="%(asctime)s|%(levelname)s|%(name)s|%(message)s")
     logger = logging.getLogger("guru")
@@ -56,49 +56,77 @@ def get_booking_page(start, end, adult, child, infant, departing, returning):
     click_operation(driver, '//*[@id="ErrorCatching-app"]/div/div/div/button/span')
     # flight no
     stringBox = driver.find_element(By.XPATH, '//*[@id="flightNo"]')
-    stringBox.send_keys('0')
+    stringBox.send_keys(data['page1']['flight_no'])
     # flight ADEP
     stringBox = driver.find_element(By.XPATH, '//*[@id="adep"]')
-    stringBox.send_keys('OIII')
+    stringBox.send_keys(data['page1']['ADEP'])
     # flight STD
     stringBox = driver.find_element(By.XPATH, '//*[@id="std"]')
-    stringBox.send_keys('2022-11-27 15:36')
+    stringBox.send_keys(data['page1']['STD'])
     # flight Tail-ID
     click_operation(driver, '//*[@id="ErrorCatching-app"]/div/div/div/div[1]/form/div/div[2]/div/div/div')
     WebDriverWait(driver, 20).until(
-        EC.element_to_be_clickable((By.XPATH, '//li[contains(text(), "EP-FSI(B1)")]'))).click()
+        EC.element_to_be_clickable((By.XPATH, f'//li[contains(text(), "{data["page1"]["Tail_id"]}")]'))).click()
     # flight ADES
     stringBox = driver.find_element(By.XPATH, '//*[@id="ades"]')
-    stringBox.send_keys('OIMM')
+    stringBox.send_keys(data['page1']['ADES'])
     # flight STA
     stringBox = driver.find_element(By.XPATH, '//*[@id="sta"]')
-    stringBox.send_keys('2022-11-27 15:36')
+    stringBox.send_keys(data['page1']['STA'])
     click_operation(driver, '//*[@id="ErrorCatching-app"]/div/div/div/div[1]/form/div/div[8]/button[2]/span')
 
     logger.info('First page params are filled and create button clicked.')
 
-    send_keys_operations(driver, '//*[@id="windInput"]', '0')
-    WebDriverWait(driver, 20).until(
-        EC.element_to_be_clickable((By.XPATH, '//*[@id="oat"]'))).send_keys('0')
-    WebDriverWait(driver, 20).until(
-        EC.element_to_be_clickable((By.XPATH, '//*[@id="qnh"]'))).send_keys('930')
+    if data['page2']['UseMETAR']:
+        click_operation(driver, '//*[@id="123123"]')
+    else:
+        send_keys_operations(driver, '//*[@id="windInput"]', data['page2']['WindDirec'] + '/0' + data['page2']['WindSpeed'])
+        WebDriverWait(driver, 20).until(
+            EC.element_to_be_clickable((By.XPATH, '//*[@id="oat"]'))).send_keys(data['page2']['OAT'])
+        #click QNH inHg
+        click_operation(driver,
+                        '//*[@id="ErrorCatching-app"]/div/div/div[2]/div[3]/div/div[2]/form/div[1]/div[1]/div[3]/div[2]/div')
+        WebDriverWait(driver, 20).until(
+            EC.element_to_be_clickable((By.XPATH, f'//li[contains(text(), "inHg")]'))).click()
+        WebDriverWait(driver, 20).until(
+            EC.element_to_be_clickable((By.XPATH, '//*[@id="qnh"]'))).send_keys(
+            int(list(filter(None, re.split(r'(\d+)', data['page2']['QNH'])))[0]) / 100)
+
+
+        # click Runway
+        click_operation(driver, '//*[@id="ErrorCatching-app"]/div/div/div[2]/div[3]/div/div[2]/form/div[1]/div[2]/div/div')
+        WebDriverWait(driver, 20).until(
+            EC.element_to_be_clickable((By.XPATH, f'//li[contains(text(), "{data["page2"]["Runway"]}")]'))).click()
+        # click Flaps
+        click_operation(driver,
+                        '//*[@id="ErrorCatching-app"]/div/div/div[2]/div[3]/div/div[2]/form/div[2]/div[1]/div[1]/div/div/div')
+        WebDriverWait(driver, 20).until(
+            EC.element_to_be_clickable((By.XPATH, f'//li[contains(text(), "{data["page2"]["Flaps"]}")]'))).click()
+        # click AntiIce
+        click_operation(driver,
+                        '//*[@id="ErrorCatching-app"]/div/div/div[2]/div[3]/div/div[2]/form/div[2]/div[1]/div[2]/div/div/div')
+        WebDriverWait(driver, 20).until(
+            EC.element_to_be_clickable((By.XPATH, f'//li[contains(text(), "{data["page2"]["AntiIce"]}")]'))).click()
+        #click Packs
+        click_operation(driver,
+                        '//*[@id="ErrorCatching-app"]/div/div/div[2]/div[3]/div/div[2]/form/div[2]/div[1]/div[3]/div/div/div')
+        WebDriverWait(driver, 20).until(
+            EC.element_to_be_clickable((By.XPATH, f'//li[contains(text(), "{data["page2"]["Packs"]}")]'))).click()
+        #click Improved
+        click_operation(driver,
+                        '//*[@id="ErrorCatching-app"]/div/div/div[2]/div[3]/div/div[2]/form/div[2]/div[1]/div[4]/div/div/div')
+        WebDriverWait(driver, 20).until(
+            EC.element_to_be_clickable((By.XPATH, f'//li[contains(text(), "{data["page2"]["Improved"]}")]'))).click()
+        logger.info('Second page params are filled and create button clicked.')
+
+    #click Runways tab
     WebDriverWait(driver, 20).until(
         EC.element_to_be_clickable((By.XPATH, '//*[@id="mass"]'))).send_keys('0')
-
-    logger.info('Second page params are filled and create button clicked.')
-
-    click_operation(driver, '//*[@id="ErrorCatching-app"]/div/div/div[2]/div[3]/div/div[2]/div/button')
-
-    logger.info('Use METAR button clicked.')
-
-    click_operation(driver, '//*[@id="123123"]')
     click_operation(driver, '//*[@id="ErrorCatching-app"]/div/div/div[2]/div[2]/button[2]/span')
-
     logger.info('Runways button clicked.')
 
     WebDriverWait(driver, 120).until(EC.element_to_be_clickable(
         (By.XPATH, '//*[@id="ErrorCatching-app"]/div/div/div[2]/div[3]/div[2]/header/div/div[1]/button')))
-
     logger.info('Add NOTAM button is clickable.')
 
     not_empty = True
@@ -108,13 +136,13 @@ def get_booking_page(start, end, adult, child, infant, departing, returning):
         i += 1
         try:
             result_list.append(driver.find_element(By.XPATH,
-                                                   f'//*[@id="ErrorCatching-app"]/div/div/div[2]/div[3]/div[2]/nav/div[{i}]').text.split('\n'))
+                                                   f'//*[@id="ErrorCatching-app"]/div/div/div[2]/div[3]/div[2]/nav/div[{i}]').text.split(
+                '\n'))
         except Exception as e:
             not_empty = False
             # logger.error(f'Error occured while reading row {i} the table and error is: {e}.')
     logger.info('Result is ready and process finished.')
     return result_list
-
 
 # result = get_booking_page('THR', 'AWZ', 1, 0, 0, '1401-10-01', '1401-10-02')
 # print(result)
