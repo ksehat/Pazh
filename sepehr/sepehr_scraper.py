@@ -99,7 +99,7 @@ def get_booking_page(start, end, adult, child, infant, departing, returning):
     list_of_price_date = driver.find_elements(By.XPATH,
                                               "//span[@class='text-center flight-available-price--fontsize iransans-medium-fa-number ng-star-inserted']")
     df = pd.DataFrame()
-    for i in range(1, 10):  # len(list_of_price_date)+1):
+    for i in range(1, 8):  # len(list_of_price_date)+1):
         xpath1 = f'/html/body/home-app/master-container/b2b-oneway-flight-page/div/div/b2b-oneway-flight-search-result-viewer/div[1]/b2b-oneway-flight-calendar-price/div/div[2]/ul/li[{i}]'
         WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.XPATH, xpath1)))
         elem1 = driver.find_element(By.XPATH, xpath1)
