@@ -65,7 +65,7 @@ def flight_info(driver):
     return df
 
 
-def get_booking_page(start, end, adult, child, infant, departing, returning):
+def get_booking_sepehr(data):
     url: str = ("https://sepehr360.ir/")
     options = webdriver.ChromeOptions()
     options.add_argument('--ignore-certificate-errors')
@@ -77,12 +77,12 @@ def get_booking_page(start, end, adult, child, infant, departing, returning):
     WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="firstPageSource"]')))
     element1 = WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="firstPageSource"]')))
     click_drop_down(driver, element1, '//*[@id="cdk-overlay-0"]')
-    element1.send_keys('THR')
+    element1.send_keys(data['origin'])
     element1.send_keys(Keys.ENTER)
     element1 = WebDriverWait(driver, 20).until(
         EC.element_to_be_clickable((By.XPATH, '//*[@id="firstPageDestination"]')))
     click_drop_down(driver, element1, '//*[@id="mat-autocomplete-1"]')
-    element1.send_keys('MHD')
+    element1.send_keys(data['destination'])
     element1.send_keys(Keys.ENTER)
 
     # Departure date
@@ -98,8 +98,12 @@ def get_booking_page(start, end, adult, child, infant, departing, returning):
 
     list_of_price_date = driver.find_elements(By.XPATH,
                                               "//span[@class='text-center flight-available-price--fontsize iransans-medium-fa-number ng-star-inserted']")
+    if data['days'] == 'last_available':
+        num_days = len(list_of_price_date) + 1
+    else:
+        num_days = data['days'] + 1
     df = pd.DataFrame()
-    for i in range(1, 8):  # len(list_of_price_date)+1):
+    for i in range(1, num_days):
         xpath1 = f'/html/body/home-app/master-container/b2b-oneway-flight-page/div/div/b2b-oneway-flight-search-result-viewer/div[1]/b2b-oneway-flight-calendar-price/div/div[2]/ul/li[{i}]'
         WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.XPATH, xpath1)))
         elem1 = driver.find_element(By.XPATH, xpath1)
@@ -130,5 +134,5 @@ def get_booking_page(start, end, adult, child, infant, departing, returning):
     return df
 
 
-result = get_booking_page('THR', 'AWZ', 1, 0, 0, '1401-10-01', '1401-10-02')
-result.to_excel('test.xlsx')
+# result = get_booking_sepehr(data)
+# result.to_excel('test.xlsx')
