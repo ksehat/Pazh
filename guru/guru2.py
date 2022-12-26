@@ -90,7 +90,7 @@ def get_booking_page(data):
             EC.element_to_be_clickable((By.XPATH, f'//li[contains(text(), "inHg")]'))).click()
         WebDriverWait(driver, 20).until(
             EC.element_to_be_clickable((By.XPATH, '//*[@id="qnh"]'))).send_keys(
-            int(list(filter(None, re.split(r'(\d+)', data['page2']['QNH'])))[0]) / 100)
+            int(re.split(r'(\d+)', data['page2']['QNH'])[1]) / 100)
 
 
         # click Runway
