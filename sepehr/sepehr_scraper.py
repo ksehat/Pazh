@@ -98,17 +98,21 @@ def get_booking_sepehr(data):
 
     list_of_price_date = driver.find_elements(By.XPATH,
                                               "//span[@class='text-center flight-available-price--fontsize iransans-medium-fa-number ng-star-inserted']")
-    if data['days'] == 'last_available':
-        num_days = len(list_of_price_date) + 1
-    else:
-        num_days = data['days'] + 1
     df = pd.DataFrame()
-    for i in range(1, num_days):
-        xpath1 = f'/html/body/home-app/master-container/b2b-oneway-flight-page/div/div/b2b-oneway-flight-search-result-viewer/div[1]/b2b-oneway-flight-calendar-price/div/div[2]/ul/li[{i}]'
-        WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.XPATH, xpath1)))
-        elem1 = driver.find_element(By.XPATH, xpath1)
+    for index, value in enumerate(list_of_price_date):
+        if isinstance(data['days'],int):
+            if index + 1 > data['days']:
+                break
+        elem1 = list_of_price_date[index]
+        WebDriverWait(driver, 20).until(EC.element_to_be_clickable(elem1))
         ActionChains(driver).move_to_element(elem1).click(elem1).perform()
         time.sleep(2)
+
+        #We should repeat these two lines of code because in each click the structure of the page changes but the indexes remain the same
+        list_of_price_date = driver.find_elements(By.XPATH,
+                                                  "//span[@class='text-center flight-available-price--fontsize iransans-medium-fa-number ng-star-inserted']")
+        elem1 = list_of_price_date[index]
+
         try:
             driver.find_element(By.XPATH, '//h4[@class="text-center no-flight-header"]')
             continue
@@ -120,13 +124,13 @@ def get_booking_sepehr(data):
                 continue
             if not df.empty:
                 df_day = pd.DataFrame({
-                    'day': [(driver.find_element(By.XPATH, xpath1).text).split('\n')[1]] * len(
+                    'day': [elem1.find_element(By.XPATH,'./ancestor::div[2]').text.split('\n')[1]] * len(
                         driver.find_elements(By.XPATH, '//div[@class="flight-info"]'))
                 })
                 df = pd.concat([df, pd.concat([df_day, flight_info(driver)], axis=1)])
             else:
                 df_day = pd.DataFrame({
-                    'day': [(driver.find_element(By.XPATH, xpath1).text).split('\n')[1]] * len(
+                    'day': [elem1.find_element(By.XPATH,'./ancestor::div[2]').text.split('\n')[1]] * len(
                         driver.find_elements(By.XPATH, '//div[@class="flight-info"]'))
                 })
                 df = pd.concat([df_day, flight_info(driver)], axis=1)
