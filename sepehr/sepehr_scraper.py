@@ -1,4 +1,5 @@
 import time
+import datetime as dt
 import pandas as pd
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -77,7 +78,7 @@ def get_booking_sepehr(data):
     WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="firstPageSource"]')))
     element1 = WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="firstPageSource"]')))
     click_drop_down(driver, element1, '//*[@id="cdk-overlay-0"]')
-    element1.send_keys(data['origin'])
+    element1.send_keys(data['origin'], Keys.ARROW_DOWN)
     element1.send_keys(Keys.ENTER)
     element1 = WebDriverWait(driver, 20).until(
         EC.element_to_be_clickable((By.XPATH, '//*[@id="firstPageDestination"]')))
@@ -122,17 +123,17 @@ def get_booking_sepehr(data):
                     EC.presence_of_element_located((By.XPATH, '//div[@class="flight-info"]')))
             except:
                 continue
+
+            num_of_flights = len(driver.find_elements(By.XPATH, '//div[@class="flight-info"]'))
+            df_day = pd.DataFrame({
+                'origin': [data['origin']] * num_of_flights,
+                'destination': [data['destination']] * num_of_flights,
+                'scrap date': [dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")] * num_of_flights,
+                'day': [elem1.find_element(By.XPATH, './ancestor::div[2]').text.split('\n')[1]] * num_of_flights
+            })
             if not df.empty:
-                df_day = pd.DataFrame({
-                    'day': [elem1.find_element(By.XPATH,'./ancestor::div[2]').text.split('\n')[1]] * len(
-                        driver.find_elements(By.XPATH, '//div[@class="flight-info"]'))
-                })
                 df = pd.concat([df, pd.concat([df_day, flight_info(driver)], axis=1)])
             else:
-                df_day = pd.DataFrame({
-                    'day': [elem1.find_element(By.XPATH,'./ancestor::div[2]').text.split('\n')[1]] * len(
-                        driver.find_elements(By.XPATH, '//div[@class="flight-info"]'))
-                })
                 df = pd.concat([df_day, flight_info(driver)], axis=1)
 
     return df
