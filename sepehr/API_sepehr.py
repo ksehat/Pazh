@@ -1,6 +1,6 @@
 from flask import Flask, request
 import json
-from guru2 import get_booking_page
+from sepehr_scraper import get_booking_sepehr
 
 app = Flask(__name__)
 
@@ -9,8 +9,8 @@ app = Flask(__name__)
 def home():
     if (request.method == 'POST'):
         data = json.loads(request.data.decode('utf-8'))
-        result = get_booking_page(data)
-        return result
+        result = get_booking_sepehr(data)
+        return result.to_json(orient='split', compression='infer')
 
 
 
