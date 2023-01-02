@@ -66,6 +66,73 @@ def flight_info(driver):
     return df
 
 
+def day_by_day_scrawl(driver, data, df, day_number_list):
+    list_of_price_date = driver.find_elements(By.XPATH,
+                                              "//span[@class='text-center flight-available-price--fontsize iransans-medium-fa-number ng-star-inserted']")
+    for index, value in enumerate(list_of_price_date):
+        if isinstance(data['days'], int):
+            if list_of_price_date:
+                if not df.empty and len(df['day'].unique()) > data['days']:
+                    return df
+            else:
+                return df
+        elem1 = list_of_price_date[index]
+        try:
+            day_number = elem1.find_element(By.XPATH, './ancestor::div[2]').text.split('\n')[1]
+        except:
+            ActionChains(driver).move_to_element(elem1).click(elem1).perform()
+            time.sleep(1)
+            df = day_by_day_scrawl(driver, data, df, day_number_list)
+            if isinstance(data['days'], int):
+                if list_of_price_date:
+                    if not df.empty and len(df['day'].unique()) > data['days']:
+                        return df
+                else:
+                    return df
+        if day_number not in day_number_list:
+            # WebDriverWait(driver, 5).until(EC.element_to_be_clickable(elem1))
+            time.sleep(1)
+            ActionChains(driver).move_to_element(elem1).click(elem1).perform()
+            time.sleep(1)
+
+            # We should repeat these two lines of code because in each click the structure of the page changes but the indexes remain the same
+            # list_of_price_date = driver.find_elements(By.XPATH,
+            #                                           "//span[@class='text-center flight-available-price--fontsize iransans-medium-fa-number ng-star-inserted']")
+            # elem1 = list_of_price_date[index]
+
+            try:
+                driver.find_element(By.XPATH, '//h4[@class="text-center no-flight-header"]')
+                continue
+            except:
+                try:
+                    WebDriverWait(driver, 20).until(
+                        EC.presence_of_element_located((By.XPATH, '//div[@class="flight-info"]')))
+                except:
+                    continue
+
+                num_of_flights = len(driver.find_elements(By.XPATH, '//div[@class="flight-info"]'))
+                df_day = pd.DataFrame({
+                    'origin': [data['origin']] * num_of_flights,
+                    'destination': [data['destination']] * num_of_flights,
+                    'scrap date': [dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")] * num_of_flights,
+                    'day': [day_number] * num_of_flights
+                })
+                if not df.empty:
+                    df = pd.concat([df, pd.concat([df_day, flight_info(driver)], axis=1)])
+                else:
+                    df = pd.concat([df_day, flight_info(driver)], axis=1)
+                day_number_list.append(day_number)
+                df = day_by_day_scrawl(driver, data, df, day_number_list)
+                if isinstance(data['days'], int):
+                    if list_of_price_date:
+                        if not df.empty and len(df['day'].unique()) > data['days']:
+                            return df
+                    else:
+                        return df
+        else:
+            continue
+
+
 def get_booking_sepehr(data):
     url: str = ("https://sepehr360.ir/")
     options = webdriver.ChromeOptions()
@@ -97,45 +164,9 @@ def get_booking_sepehr(data):
         EC.element_to_be_clickable((By.XPATH,
                                     '//*[@id="mainContainer"]/master-container/b2c-oneway-flight-page/header/nav/div/div[2]/top-menu/ul/menu-item[1]/li'))).click()
 
-    list_of_price_date = driver.find_elements(By.XPATH,
-                                              "//span[@class='text-center flight-available-price--fontsize iransans-medium-fa-number ng-star-inserted']")
     df = pd.DataFrame()
-    for index, value in enumerate(list_of_price_date):
-        if isinstance(data['days'],int):
-            if index + 1 > data['days']:
-                break
-        elem1 = list_of_price_date[index]
-        WebDriverWait(driver, 20).until(EC.element_to_be_clickable(elem1))
-        ActionChains(driver).move_to_element(elem1).click(elem1).perform()
-        time.sleep(2)
-
-        #We should repeat these two lines of code because in each click the structure of the page changes but the indexes remain the same
-        list_of_price_date = driver.find_elements(By.XPATH,
-                                                  "//span[@class='text-center flight-available-price--fontsize iransans-medium-fa-number ng-star-inserted']")
-        elem1 = list_of_price_date[index]
-
-        try:
-            driver.find_element(By.XPATH, '//h4[@class="text-center no-flight-header"]')
-            continue
-        except:
-            try:
-                WebDriverWait(driver, 20).until(
-                    EC.presence_of_element_located((By.XPATH, '//div[@class="flight-info"]')))
-            except:
-                continue
-
-            num_of_flights = len(driver.find_elements(By.XPATH, '//div[@class="flight-info"]'))
-            df_day = pd.DataFrame({
-                'origin': [data['origin']] * num_of_flights,
-                'destination': [data['destination']] * num_of_flights,
-                'scrap date': [dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")] * num_of_flights,
-                'day': [elem1.find_element(By.XPATH, './ancestor::div[2]').text.split('\n')[1]] * num_of_flights
-            })
-            if not df.empty:
-                df = pd.concat([df, pd.concat([df_day, flight_info(driver)], axis=1)])
-            else:
-                df = pd.concat([df_day, flight_info(driver)], axis=1)
-
+    day_number_list = []
+    df = day_by_day_scrawl(driver, data, df, day_number_list)
     return df
 
 
