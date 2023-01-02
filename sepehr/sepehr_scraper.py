@@ -94,12 +94,6 @@ def day_by_day_scrawl(driver, data, df, day_number_list):
             time.sleep(1)
             ActionChains(driver).move_to_element(elem1).click(elem1).perform()
             time.sleep(1)
-
-            # We should repeat these two lines of code because in each click the structure of the page changes but the indexes remain the same
-            # list_of_price_date = driver.find_elements(By.XPATH,
-            #                                           "//span[@class='text-center flight-available-price--fontsize iransans-medium-fa-number ng-star-inserted']")
-            # elem1 = list_of_price_date[index]
-
             try:
                 driver.find_element(By.XPATH, '//h4[@class="text-center no-flight-header"]')
                 continue
