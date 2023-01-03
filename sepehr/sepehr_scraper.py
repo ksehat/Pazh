@@ -10,22 +10,6 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
 
 
-def click_operation(driver, xpath):
-    try:
-        time.sleep(5)
-        element = WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.XPATH, xpath)))
-        element.click()
-    except:
-        click_operation(driver, xpath)
-
-
-def send_keys_operations(driver, xpath, keys):
-    try:
-        WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.XPATH, xpath))).send_keys(keys)
-    except:
-        send_keys_operations(driver, xpath, keys)
-
-
 def click_drop_down(driver, element1, xpath):
     try:
         element1.click()
@@ -136,7 +120,6 @@ def get_booking_sepehr(data):
     driver = webdriver.Chrome("C:\Project\Web Scraping/chromedriver", chrome_options=options)
     driver.get(url=url)
 
-    WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="firstPageSource"]')))
     element1 = WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="firstPageSource"]')))
     click_drop_down(driver, element1, '//*[@id="cdk-overlay-0"]')
     element1.send_keys(data['origin'], Keys.ARROW_DOWN)
@@ -150,19 +133,23 @@ def get_booking_sepehr(data):
     # Departure date
     WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.XPATH,
                                                                 '//*[@id="home-page-search-box"]/form/div[2]/flight-year-calendar/div/div[2]/shamsi-one-way-date-box/div'))).click()
+    # Get the list of all available dates in the first page calendar
     list_of_date_elements = driver.find_elements(By.XPATH, '//shamsi-day-calendar//div[@disabled!="true"]')
+    # Click the first date available in the calendar
     list_of_date_elements[0].click()
+    # Click search button
     WebDriverWait(driver, 20).until(
         EC.element_to_be_clickable((By.XPATH, '//*[@id="home-page-search-box"]/form/div[3]/button'))).click()
+    # Click go to the coleagues website button
     WebDriverWait(driver, 20).until(
         EC.element_to_be_clickable((By.XPATH,
                                     '//*[@id="mainContainer"]/master-container/b2c-oneway-flight-page/header/nav/div/div[2]/top-menu/ul/menu-item[1]/li'))).click()
+    # Wait until the calendar is presented
+    WebDriverWait(driver, 20).until(
+        EC.presence_of_element_located((By.XPATH,
+                                        '//*[@id="b2b-main-container"]/div/b2b-oneway-flight-search-result-viewer/div[1]/b2b-oneway-flight-calendar-price/div/div[2]')))
 
     df = pd.DataFrame()
     day_number_list = []
     df = day_by_day_scrawl(driver, data, df, day_number_list)
     return df
-
-
-# result = get_booking_sepehr(data)
-# result.to_excel('test.xlsx')
