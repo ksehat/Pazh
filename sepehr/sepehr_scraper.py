@@ -51,12 +51,13 @@ def flight_info(driver):
 
 
 def day_by_day_scrawl(driver, data, df, day_number_list):
+    monitoring_days = data['monitoringDays']
     list_of_price_date = driver.find_elements(By.XPATH,
                                               "//span[@class='text-center flight-available-price--fontsize iransans-medium-fa-number ng-star-inserted']")
     for index, value in enumerate(list_of_price_date):
-        if isinstance(data['days'], int):
+        if isinstance(monitoring_days, int):
             if list_of_price_date:
-                if not df.empty and len(df['day'].unique()) > data['days']:
+                if not df.empty and len(df['day'].unique()) > monitoring_days:
                     return df
             else:
                 return df
@@ -67,9 +68,9 @@ def day_by_day_scrawl(driver, data, df, day_number_list):
             ActionChains(driver).move_to_element(elem1).click(elem1).perform()
             time.sleep(1)
             df = day_by_day_scrawl(driver, data, df, day_number_list)
-            if isinstance(data['days'], int):
+            if isinstance(monitoring_days, int):
                 if list_of_price_date:
-                    if not df.empty and len(df['day'].unique()) > data['days']:
+                    if not df.empty and len(df['day'].unique()) > monitoring_days:
                         return df
                 else:
                     return df
@@ -90,8 +91,8 @@ def day_by_day_scrawl(driver, data, df, day_number_list):
 
                 num_of_flights = len(driver.find_elements(By.XPATH, '//div[@class="flight-info"]'))
                 df_day = pd.DataFrame({
-                    'origin': [data['origin']] * num_of_flights,
-                    'destination': [data['destination']] * num_of_flights,
+                    'origin': [data['iataCodeOrigin']] * num_of_flights,
+                    'destination': [data['iataCodeDestination']] * num_of_flights,
                     'scrap date': [dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")] * num_of_flights,
                     'day': [day_number] * num_of_flights
                 })
@@ -101,9 +102,9 @@ def day_by_day_scrawl(driver, data, df, day_number_list):
                     df = pd.concat([df_day, flight_info(driver)], axis=1)
                 day_number_list.append(day_number)
                 df = day_by_day_scrawl(driver, data, df, day_number_list)
-                if isinstance(data['days'], int):
+                if isinstance(monitoring_days, int):
                     if list_of_price_date:
-                        if not df.empty and len(df['day'].unique()) > data['days']:
+                        if not df.empty and len(df['day'].unique()) > monitoring_days:
                             return df
                     else:
                         return df
@@ -112,44 +113,48 @@ def day_by_day_scrawl(driver, data, df, day_number_list):
 
 
 def get_booking_sepehr(data):
-    url: str = ("https://sepehr360.ir/")
-    options = webdriver.ChromeOptions()
-    options.add_argument('--ignore-certificate-errors')
-    options.add_argument('--incognito')
-    # options.add_argument('--headless')
-    driver = webdriver.Chrome("C:\Project\Web Scraping/chromedriver", chrome_options=options)
-    driver.get(url=url)
+    try:
+        url: str = ("https://sepehr360.ir/")
+        options = webdriver.ChromeOptions()
+        options.add_argument('--ignore-certificate-errors')
+        options.add_argument('--incognito')
+        # options.add_argument('--headless')
+        driver = webdriver.Chrome("C:\Project\Web Scraping/chromedriver", chrome_options=options)
+        driver.get(url=url)
 
-    element1 = WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="firstPageSource"]')))
-    click_drop_down(driver, element1, '//*[@id="cdk-overlay-0"]')
-    element1.send_keys(data['origin'], Keys.ARROW_DOWN)
-    element1.send_keys(Keys.ENTER)
-    element1 = WebDriverWait(driver, 20).until(
-        EC.element_to_be_clickable((By.XPATH, '//*[@id="firstPageDestination"]')))
-    click_drop_down(driver, element1, '//*[@id="mat-autocomplete-1"]')
-    element1.send_keys(data['destination'])
-    element1.send_keys(Keys.ENTER)
+        element1 = WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="firstPageSource"]')))
+        click_drop_down(driver, element1, '//*[@id="cdk-overlay-0"]')
+        element1.send_keys(data['iataCodeOrigin'], Keys.ARROW_DOWN)
+        element1.send_keys(Keys.ENTER)
+        element1 = WebDriverWait(driver, 20).until(
+            EC.element_to_be_clickable((By.XPATH, '//*[@id="firstPageDestination"]')))
+        click_drop_down(driver, element1, '//*[@id="mat-autocomplete-1"]')
+        element1.send_keys(data['iataCodeDestination'])
+        element1.send_keys(Keys.ENTER)
 
-    # Departure date
-    WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.XPATH,
-                                                                '//*[@id="home-page-search-box"]/form/div[2]/flight-year-calendar/div/div[2]/shamsi-one-way-date-box/div'))).click()
-    # Get the list of all available dates in the first page calendar
-    list_of_date_elements = driver.find_elements(By.XPATH, '//shamsi-day-calendar//div[@disabled!="true"]')
-    # Click the first date available in the calendar
-    list_of_date_elements[0].click()
-    # Click search button
-    WebDriverWait(driver, 20).until(
-        EC.element_to_be_clickable((By.XPATH, '//*[@id="home-page-search-box"]/form/div[3]/button'))).click()
-    # Click go to the coleagues website button
-    WebDriverWait(driver, 20).until(
-        EC.element_to_be_clickable((By.XPATH,
-                                    '//*[@id="mainContainer"]/master-container/b2c-oneway-flight-page/header/nav/div/div[2]/top-menu/ul/menu-item[1]/li'))).click()
-    # Wait until the calendar is presented
-    WebDriverWait(driver, 20).until(
-        EC.presence_of_element_located((By.XPATH,
-                                        '//*[@id="b2b-main-container"]/div/b2b-oneway-flight-search-result-viewer/div[1]/b2b-oneway-flight-calendar-price/div/div[2]')))
+        # Departure date
+        WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.XPATH,
+                                                                    '//*[@id="home-page-search-box"]/form/div[2]/flight-year-calendar/div/div[2]/shamsi-one-way-date-box/div'))).click()
+        # Get the list of all available dates in the first page calendar
+        list_of_date_elements = driver.find_elements(By.XPATH, '//shamsi-day-calendar//div[@disabled!="true"]')
+        # Click the first date available in the calendar
+        list_of_date_elements[0].click()
+        # Click search button
+        WebDriverWait(driver, 20).until(
+            EC.element_to_be_clickable((By.XPATH, '//*[@id="home-page-search-box"]/form/div[3]/button'))).click()
+        # Click go to the coleagues website button
+        WebDriverWait(driver, 20).until(
+            EC.element_to_be_clickable((By.XPATH,
+                                        '//*[@id="mainContainer"]/master-container/b2c-oneway-flight-page/header/nav/div/div[2]/top-menu/ul/menu-item[1]/li'))).click()
+        # Wait until the calendar is presented
+        WebDriverWait(driver, 20).until(
+            EC.presence_of_element_located((By.XPATH,
+                                            '//*[@id="b2b-main-container"]/div/b2b-oneway-flight-search-result-viewer/div[1]/b2b-oneway-flight-calendar-price/div/div[2]')))
 
-    df = pd.DataFrame()
-    day_number_list = []
-    df = day_by_day_scrawl(driver, data, df, day_number_list)
-    return df
+        df = pd.DataFrame()
+        day_number_list = []
+        df = day_by_day_scrawl(driver, data, df, day_number_list)
+        return df
+    except:
+        print('There occured an error in the sepehr_scraper.py')
+        return None
