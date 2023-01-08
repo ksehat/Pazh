@@ -1,4 +1,4 @@
-from flask import Flask, request
+from flask import Flask, request, jsonify
 import json
 from sepehr_scraper import get_booking_sepehr
 
@@ -8,9 +8,9 @@ app = Flask(__name__)
 @app.route('/', methods=['POST'])
 def home():
     if (request.method == 'POST'):
-        data = json.loads(request.data.decode('utf-8'))
+        data = json.loads(request.data)
         result = get_booking_sepehr(data)
-        return result.to_json(orient='split', compression='infer')
+        return jsonify({'data': (result.to_json(orient='records', force_ascii=False))}).json
 
 
 
