@@ -56,70 +56,70 @@ def get_booking_page(data):
     click_operation(driver, '//*[@id="ErrorCatching-app"]/div/div/div/button/span')
     # flight no
     stringBox = driver.find_element(By.XPATH, '//*[@id="flightNo"]')
-    stringBox.send_keys(data['page1']['flight_no'])
+    stringBox.send_keys(data['flight_no'])
     # flight ADEP
     stringBox = driver.find_element(By.XPATH, '//*[@id="adep"]')
-    stringBox.send_keys(data['page1']['ADEP'])
+    stringBox.send_keys(data['ADEP'])
     # flight STD
     stringBox = driver.find_element(By.XPATH, '//*[@id="std"]')
-    stringBox.send_keys(data['page1']['STD'])
+    stringBox.send_keys(data['STD'])
     # flight Tail-ID
     click_operation(driver, '//*[@id="ErrorCatching-app"]/div/div/div/div[1]/form/div/div[2]/div/div/div')
     WebDriverWait(driver, 20).until(
-        EC.element_to_be_clickable((By.XPATH, f'//li[contains(text(), "{data["page1"]["Tail_id"]}")]'))).click()
+        EC.element_to_be_clickable((By.XPATH, f'//li[contains(text(), "{data["Tail_id"]}")]'))).click()
     # flight ADES
     stringBox = driver.find_element(By.XPATH, '//*[@id="ades"]')
-    stringBox.send_keys(data['page1']['ADES'])
+    stringBox.send_keys(data['ADES'])
     # flight STA
     stringBox = driver.find_element(By.XPATH, '//*[@id="sta"]')
-    stringBox.send_keys(data['page1']['STA'])
+    stringBox.send_keys(data['STA'])
     click_operation(driver, '//*[@id="ErrorCatching-app"]/div/div/div/div[1]/form/div/div[8]/button[2]/span')
 
     logger.info('First page params are filled and create button clicked.')
 
-    if data['page2']['UseMETAR']:
+    if data['UseMETAR']:
         click_operation(driver, '//*[@id="123123"]')
     else:
-        send_keys_operations(driver, '//*[@id="windInput"]', data['page2']['WindDirec'] + '/0' + data['page2']['WindSpeed'])
+        send_keys_operations(driver, '//*[@id="windInput"]', data['WindDirec'] + '/0' + data['WindSpeed'])
         WebDriverWait(driver, 20).until(
-            EC.element_to_be_clickable((By.XPATH, '//*[@id="oat"]'))).send_keys(data['page2']['OAT'])
-        #click QNH inHg
+            EC.element_to_be_clickable((By.XPATH, '//*[@id="oat"]'))).send_keys(data['OAT'])
+        # click QNH inHg
         click_operation(driver,
                         '//*[@id="ErrorCatching-app"]/div/div/div[2]/div[3]/div/div[2]/form/div[1]/div[1]/div[3]/div[2]/div')
         WebDriverWait(driver, 20).until(
             EC.element_to_be_clickable((By.XPATH, f'//li[contains(text(), "inHg")]'))).click()
         WebDriverWait(driver, 20).until(
             EC.element_to_be_clickable((By.XPATH, '//*[@id="qnh"]'))).send_keys(
-            int(re.split(r'(\d+)', data['page2']['QNH'])[1]) / 100)
-
+            int(re.split(r'(\d+)', data['QNH'])[1]) / 100)
 
         # click Runway
-        click_operation(driver, '//*[@id="ErrorCatching-app"]/div/div/div[2]/div[3]/div/div[2]/form/div[1]/div[2]/div/div')
+        click_operation(driver,
+                        '//*[@id="ErrorCatching-app"]/div/div/div[2]/div[3]/div/div[2]/form/div[1]/div[2]/div/div')
         WebDriverWait(driver, 20).until(
-            EC.element_to_be_clickable((By.XPATH, f'//li[contains(text(), "{data["page2"]["Runway"]}")]'))).click()
+            EC.element_to_be_clickable((By.XPATH, f'//li[contains(text(), "{data["Runway"]}")]'))).click()
         # click Flaps
         click_operation(driver,
                         '//*[@id="ErrorCatching-app"]/div/div/div[2]/div[3]/div/div[2]/form/div[2]/div[1]/div[1]/div/div/div')
         WebDriverWait(driver, 20).until(
-            EC.element_to_be_clickable((By.XPATH, f'//li[contains(text(), "{data["page2"]["Flaps"]}")]'))).click()
+            EC.element_to_be_clickable((By.XPATH, f'//li[contains(text(), "{data["Flaps"]}")]'))).click()
         # click AntiIce
         click_operation(driver,
                         '//*[@id="ErrorCatching-app"]/div/div/div[2]/div[3]/div/div[2]/form/div[2]/div[1]/div[2]/div/div/div')
         WebDriverWait(driver, 20).until(
-            EC.element_to_be_clickable((By.XPATH, f'//li[contains(text(), "{data["page2"]["AntiIce"]}")]'))).click()
-        #click Packs
+            EC.element_to_be_clickable((By.XPATH, f'//li[contains(text(), "{data["AntiIce"]}")]'))).click()
+        # click Packs
         click_operation(driver,
                         '//*[@id="ErrorCatching-app"]/div/div/div[2]/div[3]/div/div[2]/form/div[2]/div[1]/div[3]/div/div/div')
         WebDriverWait(driver, 20).until(
-            EC.element_to_be_clickable((By.XPATH, f'//li[contains(text(), "{data["page2"]["Packs"]}")]'))).click()
-        #click Improved
+            EC.element_to_be_clickable((By.XPATH, f'//li[contains(text(), "{data["Packs"]}")]'))).click()
+        # click Improved
         click_operation(driver,
                         '//*[@id="ErrorCatching-app"]/div/div/div[2]/div[3]/div/div[2]/form/div[2]/div[1]/div[4]/div/div/div')
         WebDriverWait(driver, 20).until(
-            EC.element_to_be_clickable((By.XPATH, f'//li[contains(text(), "{data["page2"]["Improved"]}")]'))).click()
+            EC.element_to_be_clickable((By.XPATH, f'//li[contains(text(), "{data["Improved"]}")]'))).click()
         logger.info('Second page params are filled and create button clicked.')
 
-    #click Runways tab
+    # click Runways tab
     WebDriverWait(driver, 20).until(
         EC.element_to_be_clickable((By.XPATH, '//*[@id="mass"]'))).send_keys('0')
     click_operation(driver, '//*[@id="ErrorCatching-app"]/div/div/div[2]/div[2]/button[2]/span')
@@ -142,7 +142,16 @@ def get_booking_page(data):
             not_empty = False
             # logger.error(f'Error occured while reading row {i} the table and error is: {e}.')
     logger.info('Result is ready and process finished.')
-    return result_list
+    result1 = []
+    for l in result_list:
+        dict1 = {
+                'BandNo': l[0],
+                'Feet': l[1],
+                'Weight': l[2]
+            }
+        result1.append(dict1)
+    result = {'GetAllCrudRobotsResponseItemViewModels':result1}
+    return result
 
 # result = get_booking_page('THR', 'AWZ', 1, 0, 0, '1401-10-01', '1401-10-02')
 # print(result)
