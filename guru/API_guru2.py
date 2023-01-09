@@ -10,6 +10,8 @@ def home():
     if (request.method == 'POST'):
         data = json.loads(request.data.decode('utf-8'))
         result = get_booking_page(data)
+        result['success'] = True
+        result['responseMessages'] = []
         return result
 
 
