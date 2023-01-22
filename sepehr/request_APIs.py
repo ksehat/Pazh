@@ -3,7 +3,7 @@ import json
 
 
 def call_sepehr(data):
-    r = requests.post(url='http://192.168.40.155:2000', data=data)
+    r = requests.post(url='http://192.168.40.155:3000', data=data)
     # df = pd.DataFrame(columns=r.json()['columns'], data=r.json()['data'])
     return r
 
