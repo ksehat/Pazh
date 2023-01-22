@@ -17,5 +17,5 @@ def home():
 # host_IP = f'{input("Please inset IP:")}'
 # host_port = f'{input("Please inset port:")}'
 if __name__ == '__main__':
-    app.run(host='192.168.40.155', port='2000')
+    app.run(host='192.168.40.155', port='3000')
 
