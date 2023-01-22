@@ -37,12 +37,12 @@ def flight_info(driver):
     organization = flight_info_one(driver, "//div[@class='name iransans-light-fa-number']")
     try:
         df = pd.DataFrame({
-            'dep_time': dep_time,
-            'air_line': air_line,
+            'dep_Time': dep_time,
+            'airline': air_line,
             'price': price,
             'capacity': capacity,
             'model': model,
-            'flight_no': flight_no,
+            'flightNo': flight_no,
             'organization': organization,
         })
     except:
@@ -93,7 +93,7 @@ def day_by_day_scrawl(driver, data, df, day_number_list):
                 df_day = pd.DataFrame({
                     'origin': [data['iataCodeOrigin']] * num_of_flights,
                     'destination': [data['iataCodeDestination']] * num_of_flights,
-                    'scrap date': [dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")] * num_of_flights,
+                    'scrap_Date': [dt.datetime.now().strftime("%d-%m-%Y %H:%M:%S")] * num_of_flights,
                     'day': [day_number] * num_of_flights
                 })
                 if not df.empty:
