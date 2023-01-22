@@ -16,8 +16,8 @@ def home():
 
 
 
-host_IP = f'{input("Please inset IP:")}'
-host_port = f'{input("Please inset port:")}'
+# host_IP = f'{input("Please inset IP:")}'
+# host_port = f'{input("Please inset port:")}'
 if __name__ == '__main__':
-    app.run(host=host_IP, port=host_port)
+    app.run(host='192.168.20.243', port='8087')
 
