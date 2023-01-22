@@ -80,7 +80,10 @@ def get_booking_page(data):
     if data['UseMETAR']:
         click_operation(driver, '//*[@id="123123"]')
     else:
-        send_keys_operations(driver, '//*[@id="windInput"]', data['WindDirec'] + '/0' + data['WindSpeed'])
+        if len(data['WindSpeed']) < 2:
+            send_keys_operations(driver, '//*[@id="windInput"]', data['WindDirect'] + '/0' + data['WindSpeed'])
+        else:
+            send_keys_operations(driver, '//*[@id="windInput"]', data['WindDirec'] + data['WindSpeed'])
         WebDriverWait(driver, 20).until(
             EC.element_to_be_clickable((By.XPATH, '//*[@id="oat"]'))).send_keys(data['OAT'])
         # click QNH inHg
