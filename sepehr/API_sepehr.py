@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify
 import json
 from sepehr_scraper import get_booking_sepehr
+from waitress import serve
 
 app = Flask(__name__)
 
@@ -17,5 +18,5 @@ def home():
 # host_IP = f'{input("Please inset IP:")}'
 # host_port = f'{input("Please inset port:")}'
 if __name__ == '__main__':
-    app.run(host='192.168.40.155', port='3000')
+    serve(app, host='192.168.40.155', port='3000')
 
