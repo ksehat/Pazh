@@ -1,8 +1,12 @@
+import copy
+import time
+from datetime import datetime
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import Select
+from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.action_chains import ActionChains
 import logging
 import re
 
@@ -54,46 +58,116 @@ def get_booking_page(data):
     click_operation(driver, '/html/body/div[3]/div[3]/div/div[3]/button/span')
     click_operation(driver, '//*[@id="clickDiv"]')
     click_operation(driver, '//*[@id="ErrorCatching-app"]/div/div/div/button/span')
-    # flight no
-    stringBox = driver.find_element(By.XPATH, '//*[@id="flightNo"]')
-    stringBox.send_keys(data['flight_no'])
-    # flight ADEP
-    stringBox = driver.find_element(By.XPATH, '//*[@id="adep"]')
-    stringBox.send_keys(data['ADEP'])
-    # flight STD
-    stringBox = driver.find_element(By.XPATH, '//*[@id="std"]')
-    stringBox.send_keys(data['STD'])
-    # flight Tail-ID
-    click_operation(driver, '//*[@id="ErrorCatching-app"]/div/div/div/div[1]/form/div/div[2]/div/div/div')
-    WebDriverWait(driver, 20).until(
-        EC.element_to_be_clickable((By.XPATH, f'//li[contains(text(), "{data["Tail_id"]}")]'))).click()
-    # flight ADES
-    stringBox = driver.find_element(By.XPATH, '//*[@id="ades"]')
-    stringBox.send_keys(data['ADES'])
-    # flight STA
-    stringBox = driver.find_element(By.XPATH, '//*[@id="sta"]')
-    stringBox.send_keys(data['STA'])
-    click_operation(driver, '//*[@id="ErrorCatching-app"]/div/div/div/div[1]/form/div/div[8]/button[2]/span')
+
+
+    counter = 0
+    rows = driver.find_elements(By.XPATH,
+                                "//tr[@class='MuiTableRow-root MuiPaper-root sc-jNnpgg jIfccS MuiPaper-elevation1 MuiPaper-rounded']")
+    if rows:
+        while True:
+            if counter <= len(rows):
+                rows = driver.find_elements(By.XPATH,"//tr[@class='MuiTableRow-root MuiPaper-root sc-jNnpgg jIfccS MuiPaper-elevation1 MuiPaper-rounded']")
+                counter = len(rows)
+                driver.execute_script("arguments[0].scrollIntoView();", rows[-1])  # scroll to last row
+                time.sleep(1)
+                rows = driver.find_elements(By.XPATH,"//tr[@class='MuiTableRow-root MuiPaper-root sc-jNnpgg jIfccS MuiPaper-elevation1 MuiPaper-rounded']")
+                counter += 1
+            else:
+                break
+
+
+        list_of_available_flights_detail = [x.text.split('\n') for x in rows]
+        [x.remove(x[-2]) for x in list_of_available_flights_detail]
+        data_list = [x for x in data.values()][:-10]
+        org_dest = data_list[1] + ' - ' + data_list[2]
+        m1 = datetime.strptime(data_list[3], '%Y-%m-%d %H:%M').strftime('%b %d').upper()
+        t1 = datetime.strptime(data_list[3], '%Y-%m-%d %H:%M').strftime('%H:%M') + ' - ' + datetime.strptime(
+            data_list[3], '%Y-%m-%d %H:%M').strftime('%H:%M') + ' UTC'
+        data_list_reformet = [data_list[0],m1,org_dest,t1,data_list[-1]]
+        try:
+            idx_available_in_flights = list_of_available_flights_detail.index(data_list_reformet)
+            list_of_clickable_table_rows = driver.find_elements(By.XPATH, '//td[@class="MuiTableCell-root MuiTableCell-body right"]//p[@class="MuiTypography-root sc-iTVJFM oxVOu MuiTypography-body1"]')
+            element1 = list_of_clickable_table_rows[idx_available_in_flights]
+            time.sleep(1)
+            ActionChains(driver).move_to_element(element1).perform()
+            element1.click()
+            WebDriverWait(driver, 20).until(
+                EC.element_to_be_clickable((By.XPATH, '//span[@class="MuiButton-label" and text()="Use Flight"]'))).click()
+            WebDriverWait(driver, 20).until(
+                EC.element_to_be_clickable(
+                    (By.XPATH, '//*[@id="ErrorCatching-app"]/div/div/div[2]/div[2]/button[1]/span'))).click()
+        except:
+            # flight no
+            stringBox = driver.find_element(By.XPATH, '//*[@id="flightNo"]')
+            stringBox.send_keys(data['flight_no'])
+            # flight ADEP
+            stringBox = driver.find_element(By.XPATH, '//*[@id="adep"]')
+            stringBox.send_keys(data['ADEP'])
+            # flight STD
+            stringBox = driver.find_element(By.XPATH, '//*[@id="std"]')
+            stringBox.send_keys(data['STD'])
+            # flight Tail-ID
+            click_operation(driver, '//*[@id="ErrorCatching-app"]/div/div/div/div[1]/form/div/div[2]/div/div/div')
+            WebDriverWait(driver, 20).until(
+                EC.element_to_be_clickable((By.XPATH, f'//li[contains(text(), "{data["Tail_id"]}")]'))).click()
+            # flight ADES
+            stringBox = driver.find_element(By.XPATH, '//*[@id="ades"]')
+            stringBox.send_keys(data['ADES'])
+            # flight STA
+            stringBox = driver.find_element(By.XPATH, '//*[@id="sta"]')
+            stringBox.send_keys(data['STA'])
+            click_operation(driver, '//*[@id="ErrorCatching-app"]/div/div/div/div[1]/form/div/div[8]/button[2]/span')
+    else:
+        # flight no
+        stringBox = driver.find_element(By.XPATH, '//*[@id="flightNo"]')
+        stringBox.send_keys(data['flight_no'])
+        # flight ADEP
+        stringBox = driver.find_element(By.XPATH, '//*[@id="adep"]')
+        stringBox.send_keys(data['ADEP'])
+        # flight STD
+        stringBox = driver.find_element(By.XPATH, '//*[@id="std"]')
+        stringBox.send_keys(data['STD'])
+        # flight Tail-ID
+        click_operation(driver, '//*[@id="ErrorCatching-app"]/div/div/div/div[1]/form/div/div[2]/div/div/div')
+        WebDriverWait(driver, 20).until(
+            EC.element_to_be_clickable((By.XPATH, f'//li[contains(text(), "{data["Tail_id"]}")]'))).click()
+        # flight ADES
+        stringBox = driver.find_element(By.XPATH, '//*[@id="ades"]')
+        stringBox.send_keys(data['ADES'])
+        # flight STA
+        stringBox = driver.find_element(By.XPATH, '//*[@id="sta"]')
+        stringBox.send_keys(data['STA'])
+        click_operation(driver, '//*[@id="ErrorCatching-app"]/div/div/div/div[1]/form/div/div[8]/button[2]/span')
 
     logger.info('First page params are filled and create button clicked.')
 
     if data['UseMETAR']:
+        try:
+            WebDriverWait(driver, 20).until(
+                EC.element_to_be_clickable((By.XPATH, '//span[@class="MuiButton-label" and text()="Load METAR"]'))).click()
+        except:
+            pass
         click_operation(driver, '//*[@id="123123"]')
+
     else:
         if len(data['WindSpeed']) < 2:
             send_keys_operations(driver, '//*[@id="windInput"]', data['WindDirect'] + '/0' + data['WindSpeed'])
         else:
             send_keys_operations(driver, '//*[@id="windInput"]', data['WindDirec'] + data['WindSpeed'])
-        WebDriverWait(driver, 20).until(
-            EC.element_to_be_clickable((By.XPATH, '//*[@id="oat"]'))).send_keys(data['OAT'])
+        elem1 = WebDriverWait(driver, 20).until(
+            EC.element_to_be_clickable((By.XPATH, '//*[@id="oat"]')))
+        elem1.send_keys(Keys.CONTROL, "a")
+        elem1.send_keys(Keys.DELETE)
+        elem1.send_keys(data['OAT'])
         # click QNH inHg
         click_operation(driver,
                         '//*[@id="ErrorCatching-app"]/div/div/div[2]/div[3]/div/div[2]/form/div[1]/div[1]/div[3]/div[2]/div')
         WebDriverWait(driver, 20).until(
             EC.element_to_be_clickable((By.XPATH, f'//li[contains(text(), "inHg")]'))).click()
-        WebDriverWait(driver, 20).until(
-            EC.element_to_be_clickable((By.XPATH, '//*[@id="qnh"]'))).send_keys(
-            int(re.split(r'(\d+)', data['QNH'])[1]) / 100)
+        elem1 = WebDriverWait(driver, 20).until(
+            EC.element_to_be_clickable((By.XPATH, '//*[@id="qnh"]')))
+        elem1.clear()
+        elem1.send_keys(int(re.split(r'(\d+)', data['QNH'])[1]) / 100)
 
         # click Runway
         click_operation(driver,
@@ -123,8 +197,11 @@ def get_booking_page(data):
         logger.info('Second page params are filled and create button clicked.')
 
     # click Runways tab
-    WebDriverWait(driver, 20).until(
-        EC.element_to_be_clickable((By.XPATH, '//*[@id="mass"]'))).send_keys('0')
+    elem1 = WebDriverWait(driver, 20).until(
+        EC.element_to_be_clickable((By.XPATH, '//*[@id="mass"]')))
+    elem1.send_keys(Keys.CONTROL, "a")
+    elem1.send_keys(Keys.DELETE)
+    elem1.send_keys('0')
     click_operation(driver, '//*[@id="ErrorCatching-app"]/div/div/div[2]/div[2]/button[2]/span')
     logger.info('Runways button clicked.')
 
@@ -148,12 +225,12 @@ def get_booking_page(data):
     result1 = []
     for l in result_list:
         dict1 = {
-                'BandNo': l[0],
-                'Feet': l[1],
-                'Weight': l[2]
-            }
+            'BandNo': l[0],
+            'Feet': l[1],
+            'Weight': l[2]
+        }
         result1.append(dict1)
-    result = {'GetAllCrudRobotsResponseItemViewModels':result1}
+    result = {'GetAllCrudRobotsResponseItemViewModels': result1}
     return result
 
 # result = get_booking_page('THR', 'AWZ', 1, 0, 0, '1401-10-01', '1401-10-02')
