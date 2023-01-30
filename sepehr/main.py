@@ -74,7 +74,6 @@ def main():
                 except:
                     error_message = 'There occured an error in the call_sepehr function.'
                 response_time = dt.now().strftime("%d-%m-%Y %H:%M:%S")
-                # TODO: API post method should be used here to post the results to the DB2
                 if result:
                     logger.info(
                         f'Scraping the route {row[0]["iataCodeOrigin"]} to {row[0]["iataCodeDestination"]} for {row[0]["monitoringDays"]} days(day) with interval of {row[0]["interval"]} minutes finished successfuly.')
