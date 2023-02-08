@@ -1,3 +1,4 @@
+import copy
 import time
 import datetime as dt
 import pandas as pd
@@ -27,14 +28,43 @@ def flight_info_one(driver, xpath):
     return result
 
 
-def flight_info(driver):
-    capacity = flight_info_one(driver, "//div[@class='count iransans-bold-fa-number']")
-    price = flight_info_one(driver, "//div[@class='price iransans-medium-fa-number']")
-    dep_time = flight_info_one(driver, "//span[@class='departure-time']")
-    air_line = flight_info_one(driver, "//span[@class='title']")
-    flight_no = flight_info_one(driver, "//span[@class='number iransans-light-fa-number']")
-    model = flight_info_one(driver, "//span[@class='airline-name']")
-    organization = flight_info_one(driver, "//div[@class='name iransans-light-fa-number']")
+def flight_info_scrapper(driver, flight_info):
+    root_xpath = []
+    capacity = []
+    price = []
+    dep_time = []
+    air_line = []
+    flight_no = []
+    model = []
+    organization = []
+    class_type = []
+    for i in range(1, len(flight_info)+1):
+        root_xpath = f'(//div)[@class="flight-info"][{i}]'
+        capacity.append(driver.find_element(By.XPATH, root_xpath + "//div[@class='count iransans-bold-fa-number']").text)
+        price.append(driver.find_element(By.XPATH, root_xpath + "//div[@class='price iransans-medium-fa-number']").text)
+        dep_time.append(driver.find_element(By.XPATH, root_xpath + "//span[@class='departure-time']").text)
+        air_line.append(driver.find_element(By.XPATH, root_xpath + "//span[@class='title']").text)
+        flight_no.append(driver.find_element(By.XPATH, root_xpath + "//span[@class='number iransans-light-fa-number']").text)
+        model.append(driver.find_element(By.XPATH, root_xpath + "//span[@class='airline-name']").text)
+        organization.append(driver.find_element(By.XPATH, root_xpath + "//div[@class='name iransans-light-fa-number']").text)
+        try:
+            driver.find_element(By.XPATH, root_xpath + "//img[@class='flag_icon']")
+            class_type.append('1')
+        except:
+            try:
+                driver.find_element(By.XPATH, root_xpath + "//img[@class='flag-icon']")
+                class_type.append('1')
+            except:
+                class_type.append('0')
+
+    # capacity = flight_info_one(driver, "//div[@class='count iransans-bold-fa-number']")
+    # price = flight_info_one(driver, "//div[@class='price iransans-medium-fa-number']")
+    # dep_time = flight_info_one(driver, "//span[@class='departure-time']")
+    # air_line = flight_info_one(driver, "//span[@class='title']")
+    # flight_no = flight_info_one(driver, "//span[@class='number iransans-light-fa-number']")
+    # model = flight_info_one(driver, "//span[@class='airline-name']")
+    # organization = flight_info_one(driver, "//div[@class='name iransans-light-fa-number']")
+    # class_of_flight = 1 if WebDriverWait(driver, 20).until(EC.presence_of_all_elements_located((By.XPATH, '//img[@class="flag-icon"]'))) else 0
     try:
         df = pd.DataFrame({
             'dep_Time': dep_time,
@@ -44,6 +74,7 @@ def flight_info(driver):
             'model': model,
             'flightNo': flight_no,
             'organization': organization,
+            'class_Type': class_type
         })
     except:
         flight_info(driver)
@@ -89,7 +120,8 @@ def day_by_day_scrawl(driver, data, df, day_number_list):
                 except:
                     continue
 
-                num_of_flights = len(driver.find_elements(By.XPATH, '//div[@class="flight-info"]'))
+                flight_info = driver.find_elements(By.XPATH, '//div[@class="flight-info"]')
+                num_of_flights = len(flight_info)
                 df_day = pd.DataFrame({
                     'origin': [data['iataCodeOrigin']] * num_of_flights,
                     'destination': [data['iataCodeDestination']] * num_of_flights,
@@ -97,9 +129,9 @@ def day_by_day_scrawl(driver, data, df, day_number_list):
                     'day': [day_number] * num_of_flights
                 })
                 if not df.empty:
-                    df = pd.concat([df, pd.concat([df_day, flight_info(driver)], axis=1)])
+                    df = pd.concat([df, pd.concat([df_day, flight_info_scrapper(driver, flight_info)], axis=1)])
                 else:
-                    df = pd.concat([df_day, flight_info(driver)], axis=1)
+                    df = pd.concat([df_day, flight_info_scrapper(driver, flight_info)], axis=1)
                 day_number_list.append(day_number)
                 df = day_by_day_scrawl(driver, data, df, day_number_list)
                 if isinstance(monitoring_days, int):
