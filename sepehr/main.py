@@ -77,10 +77,9 @@ def main():
                 if result:
                     logger.info(
                         f'Scraping the route {row[0]["iataCodeOrigin"]} to {row[0]["iataCodeDestination"]} for {row[0]["monitoringDays"]} days(day) with interval of {row[0]["interval"]} minutes finished successfuly.')
-                    df_routes.loc[index, 'start_process_time'] = dt.now()
-                    df_routes.to_csv('routes_start_time.csv', index=False)
                     error_message = None
-
+                    df_routes.loc[index, 'start_process_time'] = request_time
+                    df_routes.to_csv('routes_start_time.csv', index=False)
                     result_dict = json.loads(result.text)
                     result_dict['createRouteMonitoringResultRequestItemViewModels'] = result_dict.pop('data')
                     result_dict['createRouteMonitoringResultRequestItemViewModels'] = json.loads(
@@ -97,17 +96,16 @@ def main():
                 else:
                     logger.error(
                         f'Scraping the route {row[0]["iataCodeOrigin"]} to {row[0]["iataCodeDestination"]} for {row[0]["monitoringDays"]} days(day) with interval of {row[0]["interval"]} minutes was unsuccessful.')
-                    error_message = 'Error'
+                    error_message = 'Error in Scraper'
                     r = requests.post(url='http://192.168.20.243:8083/api/RouteMonitoring/CreateRouteMonitoringResult',
-                                  json={'createRouteMonitoringResultRequestItemViewModels': [{}],
-                                        'requestTime': request_time,
-                                        'responseTime': response_time,
-                                        'errorMessage': error_message,
-                                        'fkRouteMonitoringDetail': row[0]["pkRouteMonitoringDetail"]},
-                                  headers={'Authorization': f'Bearer {token}',
-                                           'Content-type': 'application/json',
-                                           })
-
+                                      json={'createRouteMonitoringResultRequestItemViewModels': [{}],
+                                            'requestTime': request_time,
+                                            'responseTime': response_time,
+                                            'errorMessage': error_message,
+                                            'fkRouteMonitoringDetail': row[0]["pkRouteMonitoringDetail"]},
+                                      headers={'Authorization': f'Bearer {token}',
+                                               'Content-type': 'application/json',
+                                               })
 
 
 if __name__ == '__main__':
